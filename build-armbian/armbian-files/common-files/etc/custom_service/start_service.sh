@@ -31,7 +31,7 @@ ophub_release_file="/etc/ophub-release"
 }
 
 # For swan1-w28(rk3568) board USB power and switch contrl
-[[ "${FDT_FILE}" == "rk3568-swan1-w28.dtb" ]] && {
+[[ "$(cat ${ophub_release_file} | grep -oE 'rk.*dtb')" == "rk3568-swan1-w28.dtb" ]] && {
     # USB 5V Power buick ON
     gpioset 0 21=1 2>/dev/null
     # USB3.0 Port ON
@@ -40,6 +40,20 @@ ophub_release_file="/etc/ophub-release"
     gpioset 4 21=1 2>/dev/null
     gpioset 4 22=1 2>/dev/null
     echo "[$(date +"%Y.%m.%d.%H:%M:%S")] USB successfully enabled on Swan1-w28(rk3568)." >>${custom_log}
+}
+
+# For smart-am60(rk3588) board bluetooth init 
+[[ "$(cat ${ophub_release_file} | grep -oE 'rk.*dtb')" == "rk3588-smart-am60.dtb" ]] && {
+    killall -q -9 brcm_patchram_plus1 || true
+    echo 0 | tee /sys/class/rfkill/rfkill0/state >/dev/null
+    echo 0 > /proc/bluetooth/sleep/btwrite
+    sleep .5
+    echo 1 | tee /sys/class/rfkill/rfkill0/state >/dev/null
+    echo 1 > /proc/bluetooth/sleep/btwrite
+    sleep .5
+    brcm_patchram_plus1 --enable_hci --no2bytes --use_baudrate_for_download --tosleep 200000 --baudrate 1500000 --patchram /lib/firmware/ap6276p/ /dev/ttyS9 &
+    rfkill unblock all
+    echo "[$(date +"%Y.%m.%d.%H:%M:%S")] Bluetooth successfully init on smart-am60(rk3588)." >>${custom_log}
 }
 
 # Restart ssh service
