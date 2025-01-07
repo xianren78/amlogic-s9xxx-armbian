@@ -51,6 +51,7 @@ ophub_release_file="/etc/ophub-release"
     echo 1 | tee /sys/class/rfkill/rfkill0/state >/dev/null
     echo 1 > /proc/bluetooth/sleep/btwrite
     sleep .5
+    chmod +x /usr/sbin/brcm_patchram_plus1
     brcm_patchram_plus1 --enable_hci --no2bytes --use_baudrate_for_download --tosleep 200000 --baudrate 1500000 --patchram /lib/firmware/ap6276p/ /dev/ttyS9 &
     rfkill unblock all
     echo "[$(date +"%Y.%m.%d.%H:%M:%S")] Bluetooth successfully init on smart-am60(rk3588)." >>${custom_log}
